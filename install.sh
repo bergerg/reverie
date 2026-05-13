@@ -29,3 +29,11 @@ else
     mkdir -p "$(dirname "$INSTALL_DIR")"
     git clone "$REPO_URL" "$INSTALL_DIR"
 fi
+
+# 3. Sync dependencies
+print_step "Syncing dependencies"
+uv sync --project "$INSTALL_DIR" --quiet
+
+# 4. Backfill existing transcripts
+print_step "Indexing existing transcripts"
+uv run --project "$INSTALL_DIR" reverie backfill
