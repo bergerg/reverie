@@ -64,3 +64,42 @@ config["mcpServers"]["reverie"] = {
 path.write_text(json.dumps(config, indent=2) + "\n")
 print(f"  Written: {path}")
 PYEOF
+
+# 6. Patch SessionEnd hook
+SETTINGS="$HOME/.claude/settings.json"
+print_step "Configuring SessionEnd hook in $SETTINGS"
+python3 - "$INSTALL_DIR" "$SETTINGS" <<'PYEOF'
+import json, os, sys
+from pathlib import Path
+
+install_dir, settings_path = sys.argv[1], sys.argv[2]
+hook_cmd = os.path.join(install_dir, "bin", "reverie-hook.sh")
+path = Path(settings_path)
+path.parent.mkdir(parents=True, exist_ok=True)
+
+config = {}
+if path.exists():
+    try:
+        config = json.loads(path.read_text())
+    except json.JSONDecodeError:
+        print(f"  Warning: could not parse {path}, starting fresh", file=sys.stderr)
+
+config.setdefault("hooks", {})
+config["hooks"].setdefault("SessionEnd", [])
+
+# Idempotent: only add if this hook command isn't already present
+existing = config["hooks"]["SessionEnd"]
+already_present = any(
+    any(h.get("command") == hook_cmd for h in item.get("hooks", []))
+    for item in existing
+    if isinstance(item, dict)
+)
+if not already_present:
+    existing.append({
+        "matcher": "",
+        "hooks": [{"type": "command", "command": hook_cmd}]
+    })
+
+path.write_text(json.dumps(config, indent=2) + "\n")
+print(f"  Written: {path}")
+PYEOF
