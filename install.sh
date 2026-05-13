@@ -34,11 +34,15 @@ fi
 print_step "Syncing dependencies"
 uv sync --project "$INSTALL_DIR" --quiet
 
-# 4. Backfill existing transcripts
+# 4. Install reverie CLI tool
+print_step "Installing reverie CLI"
+uv tool install --reinstall "$INSTALL_DIR"
+
+# 5. Backfill existing transcripts
 print_step "Indexing existing transcripts"
 uv run --project "$INSTALL_DIR" reverie backfill
 
-# 5. Patch MCP server config
+# 6. Patch MCP server config
 CLAUDE_CONFIG="$HOME/.claude/claude_desktop_config.json"
 print_step "Configuring MCP server in $CLAUDE_CONFIG"
 python3 - "$INSTALL_DIR" "$CLAUDE_CONFIG" <<'PYEOF'
@@ -65,7 +69,7 @@ path.write_text(json.dumps(config, indent=2) + "\n")
 print(f"  Written: {path}")
 PYEOF
 
-# 6. Patch SessionEnd hook
+# 7. Patch SessionEnd hook
 SETTINGS="$HOME/.claude/settings.json"
 print_step "Configuring SessionEnd hook in $SETTINGS"
 python3 - "$INSTALL_DIR" "$SETTINGS" <<'PYEOF'
@@ -104,7 +108,7 @@ path.write_text(json.dumps(config, indent=2) + "\n")
 print(f"  Written: {path}")
 PYEOF
 
-# 7. Summary
+# 8. Summary
 echo ""
 echo -e "${GREEN}✓ reverie installed${NC} → $INSTALL_DIR"
 echo -e "${GREEN}✓ MCP server${NC}       → $CLAUDE_CONFIG"
