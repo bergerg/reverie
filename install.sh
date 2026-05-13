@@ -103,3 +103,14 @@ if not already_present:
 path.write_text(json.dumps(config, indent=2) + "\n")
 print(f"  Written: {path}")
 PYEOF
+
+# 7. Summary
+echo ""
+echo -e "${GREEN}✓ reverie installed${NC} → $INSTALL_DIR"
+echo -e "${GREEN}✓ MCP server${NC}       → $CLAUDE_CONFIG"
+echo -e "${GREEN}✓ SessionEnd hook${NC}  → $SETTINGS"
+echo ""
+echo "Restart Claude Code to activate the MCP server."
+echo ""
+echo "Verify with:"
+echo "  uv run --project $INSTALL_DIR reverie stats"

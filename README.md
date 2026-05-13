@@ -13,6 +13,16 @@ Reverie parses the JSONL transcript files that Claude Code writes to `~/.claude/
 
 ## Installation
 
+### One-liner
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/bergerg/reverie/main/install.sh | bash
+```
+
+Installs to `~/.local/share/reverie`, configures the MCP server and `SessionEnd` hook automatically. Restart Claude Code when done.
+
+### Manual
+
 Requires Python ≥ 3.11 and [uv](https://github.com/astral-sh/uv).
 
 ```sh
