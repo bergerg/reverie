@@ -37,3 +37,30 @@ uv sync --project "$INSTALL_DIR" --quiet
 # 4. Backfill existing transcripts
 print_step "Indexing existing transcripts"
 uv run --project "$INSTALL_DIR" reverie backfill
+
+# 5. Patch MCP server config
+CLAUDE_CONFIG="$HOME/.claude/claude_desktop_config.json"
+print_step "Configuring MCP server in $CLAUDE_CONFIG"
+python3 - "$INSTALL_DIR" "$CLAUDE_CONFIG" <<'PYEOF'
+import json, sys
+from pathlib import Path
+
+install_dir, config_path = sys.argv[1], sys.argv[2]
+path = Path(config_path)
+path.parent.mkdir(parents=True, exist_ok=True)
+
+config = {}
+if path.exists():
+    try:
+        config = json.loads(path.read_text())
+    except json.JSONDecodeError:
+        print(f"  Warning: could not parse {path}, starting fresh", file=sys.stderr)
+
+config.setdefault("mcpServers", {})
+config["mcpServers"]["reverie"] = {
+    "command": "uv",
+    "args": ["run", "--project", install_dir, "reverie", "serve"]
+}
+path.write_text(json.dumps(config, indent=2) + "\n")
+print(f"  Written: {path}")
+PYEOF
